@@ -57,7 +57,7 @@ def main():
         st.error(f"Error loading model: {e}")
 
     # Upload images
-     user_input1 = st.file_uploader("Upload Image 1", type=["jpg", "jpeg", "png"])
+    user_input1 = st.file_uploader("Upload Image 1", type=["jpg", "jpeg", "png"])
     user_input2 = st.file_uploader("Upload Image 2", type=["jpg", "jpeg", "png"])
 
     if siamese_model and user_input1 and user_input2:
@@ -78,5 +78,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
