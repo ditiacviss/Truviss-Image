@@ -6,6 +6,8 @@ import os
 import streamlit as st
 from PIL import Image
 import io
+import tempfile
+
 
 def cosine_distance(vectors):
     x, y = vectors
@@ -43,15 +45,28 @@ def predict(model, image_pair, target_size=(224, 224)):
         print(f"Error during prediction: {e}")
         return None
 
-
 def main():
     st.title("Image Matcher")
-    siamese = st.file_uploader('Upload your model')
+    siamese = st.file_uploader('Upload your model (.h5 format)', type=["h5"])
 
-    siamese_model = load_model(
-        siamese,
-        custom_objects={'cosine_distance': cosine_distance}
-    )
+    siamese_model = None
+    if siamese:
+        try:
+            # Save the uploaded model file temporarily
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_model_file:
+                temp_model_file.write(siamese.read())
+                temp_model_file_path = temp_model_file.name
+
+            # Load the model
+            siamese_model = load_model(
+                temp_model_file_path,
+                custom_objects={'cosine_distance': cosine_distance}
+            )
+            st.success("Model loaded successfully!")
+        except Exception as e:
+            st.error(f"Error loading model: {e}")
+            return
+
 
     # Upload images
     user_input1 = st.file_uploader("Upload Image 1", type=["jpg", "jpeg", "png"])
