@@ -1,13 +1,12 @@
 import numpy as np
-from tensorflow.keras.preprocessing.image import img_to_array
 from tensorflow.keras.models import load_model
 from tensorflow.keras import backend as K
 import streamlit as st
 from PIL import Image
 import io
+import tempfile
 
 
-# Custom loss function for the Siamese model
 def cosine_distance(vectors):
     x, y = vectors
     x = K.l2_normalize(x, axis=1)
@@ -15,7 +14,6 @@ def cosine_distance(vectors):
     return -K.sum(x * y, axis=1, keepdims=True)
 
 
-# Prediction function
 def predict(model, img1, img2, target_size=(224, 224)):
     try:
         # Preprocess image 1
@@ -39,38 +37,41 @@ def predict(model, img1, img2, target_size=(224, 224)):
         return None
 
 
-# Main Streamlit application
 def main():
     st.title("Image Matcher")
 
-    # Load the pre-trained Siamese model
-    model_path = "siamese_model.h5"  # Ensure this file exists in the working directory
-    siamese_model = None
+    # File upload for the model
+    siamese = st.file_uploader("Upload your Siamese model (.h5 format)", type=["h5"])
 
-    try:
-        siamese_model = load_model(
-            model_path,
-            custom_objects={"cosine_distance": cosine_distance}
-        )
-        st.success("Model loaded successfully!")
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
-        return
+    siamese_model = None
+    if siamese:
+        try:
+            # Save the uploaded model temporarily
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".h5") as temp_model_file:
+                temp_model_file.write(siamese.read())
+                temp_model_file_path = temp_model_file.name
+
+            # Load the model
+            siamese_model = load_model(
+                temp_model_file_path,
+                custom_objects={"cosine_distance": cosine_distance}
+            )
+            st.success("Model loaded successfully!")
+        except Exception as e:
+            st.error(f"Error loading model: {e}")
+            return
 
     # File upload for images
     user_input1 = st.file_uploader("Upload Image 1", type=["jpg", "jpeg", "png"])
     user_input2 = st.file_uploader("Upload Image 2", type=["jpg", "jpeg", "png"])
 
-    if user_input1 and user_input2:
-        # Convert uploaded files to PIL images
+    if siamese_model and user_input1 and user_input2:
         img1 = Image.open(io.BytesIO(user_input1.read()))
         img2 = Image.open(io.BytesIO(user_input2.read()))
 
-        # Display uploaded images
         st.image(img1, caption="Image 1", use_column_width=True)
         st.image(img2, caption="Image 2", use_column_width=True)
 
-        # Process button
         if st.button("Process"):
             predicted_label = predict(siamese_model, img1, img2)
             if predicted_label is not None:
@@ -78,7 +79,7 @@ def main():
             else:
                 st.error("An error occurred during prediction.")
     else:
-        st.info("Please upload both images to proceed.")
+        st.info("Please upload both the model and images to proceed.")
 
 
 if __name__ == "__main__":
