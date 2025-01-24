@@ -47,7 +47,7 @@ def predict(model, image_pair, target_size=(224, 224)):
 
 def main():
     st.title("Image Matcher")
-    siamese = st.file_uploader('Upload your model (.h5 format)', type=["h5"])
+    siamese = 'siamese_model.h5'
 
     siamese_model = None
     if siamese:
