@@ -48,25 +48,27 @@ def main():
     st.title("Image Matcher")
     siamese = st.file_uploader('Upload your model')
 
-    try:
-        siamese_model = load_model(
-            siamese,
-            custom_objects={'cosine_distance': cosine_distance}
-        )
-    except Exception as e:
-        st.error(f"Error loading model: {e}")
+    siamese_model = load_model(
+        siamese,
+        custom_objects={'cosine_distance': cosine_distance}
+    )
 
     # Upload images
     user_input1 = st.file_uploader("Upload Image 1", type=["jpg", "jpeg", "png"])
     user_input2 = st.file_uploader("Upload Image 2", type=["jpg", "jpeg", "png"])
 
-    if siamese_model and user_input1 and user_input2:
+    if user_input1 and user_input2:
+        # Convert uploaded files to PIL images
         img1 = Image.open(io.BytesIO(user_input1.read()))
         img2 = Image.open(io.BytesIO(user_input2.read()))
 
+        # Display uploaded images
         st.image(img1, caption="Image 1", use_column_width=True)
         st.image(img2, caption="Image 2", use_column_width=True)
 
+        st.button('Process')
+
+        # Make a prediction
         predicted_label = predict(siamese_model, img1, img2)
 
         if predicted_label is not None:
@@ -74,7 +76,7 @@ def main():
         else:
             st.error("An error occurred during prediction.")
     else:
-        st.info("Please upload both images and the model to proceed.")
+        st.info("Please upload both images to proceed.")
 
 if __name__ == "__main__":
     main()
