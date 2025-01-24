@@ -46,11 +46,11 @@ def predict(model, image_pair, target_size=(224, 224)):
 
 def main():
     st.title("Image Matcher")
-    # siamese = st.file_uploader('Upload your model')
+    siamese = st.file_uploader('Upload your model')
 
     try:
         siamese_model = load_model(
-            r"siamese_model_new.keras",
+            siamese,
             custom_objects={'cosine_distance': cosine_distance}
         )
     except Exception as e:
