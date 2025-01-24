@@ -2,7 +2,6 @@
 charset-normalizer==3.4.0
 filelock==3.16.1
 idna==3.10
-numpy==2.1.2
 pandas==2.2.3
 python-dateutil==2.9.0.post0
 python-whois==0.9.4
